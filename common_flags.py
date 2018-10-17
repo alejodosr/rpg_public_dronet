@@ -19,6 +19,8 @@ gflags.DEFINE_integer('batch_size', 32, 'Batch size in training and evaluation')
 gflags.DEFINE_integer('epochs', 100, 'Number of epochs for training')
 gflags.DEFINE_integer('log_rate', 10, 'Logging rate for full model (epochs)')
 gflags.DEFINE_integer('initial_epoch', 0, 'Initial epoch to start training')
+gflags.DEFINE_integer('images_show', False, 'Show images while doing predictions')
+gflags.DEFINE_integer('record_video', False, 'Record video of the images that are being shown')
 
 # Files
 gflags.DEFINE_string('experiment_rootdir', "./model", 'Folder '

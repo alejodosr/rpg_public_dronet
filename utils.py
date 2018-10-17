@@ -216,7 +216,7 @@ class DroneDirectoryIterator(Iterator):
 
 def compute_predictions_and_gt(model, generator, steps,
                                      max_q_size=10,
-                                     pickle_safe=False, verbose=0, images_path_opencv=""):
+                                     pickle_safe=False, verbose=0, images_path_opencv="", images_show=False, record_video=False):
     """
     Generate predictions and associated ground truth
     for the input samples from a data generator.
@@ -251,6 +251,14 @@ def compute_predictions_and_gt(model, generator, steps,
     all_ts = []
     img_counter = 0
 
+    if record_video:
+        # Define parameters
+        FRAME_RATE = 50.0
+
+        # Initialize variables
+        cap = cv2.VideoCapture(0)
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+
     if verbose == 1:
         progbar = Progbar(target=steps)
 
@@ -277,10 +285,7 @@ def compute_predictions_and_gt(model, generator, steps,
 
         outs = model.predict_on_batch(x)
 
-        ENABLE_SHOW = True
-
-
-        if (ENABLE_SHOW):
+        if (images_show):
             # Read image
             img = cv2.imread(images_path_opencv + images_file_names[int(getattr(generator, "batch_index") - 1)])
 
@@ -294,17 +299,27 @@ def compute_predictions_and_gt(model, generator, steps,
             RO_SIZE = 400
             cv2.line(img, (OFFSET_X, OFFSET_Y), (OFFSET_X, int(OFFSET_Y - RO_SIZE * p_coll)), color, 35, cv2.LINE_4)
 
-            # font = cv2.FONT_HERSHEY_SIMPLEX
-            # cv2.putText(img, str(abs(round(float(outs[1][0]), 3))), (10, 500), font, 3, (255, 255, 255), 2, cv2.LINE_AA)
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            cv2.putText(img, str(abs(round(float(outs[1][0]), 3))), (OFFSET_X + 45, OFFSET_Y), font, 2, color, 2, cv2.LINE_AA)
             # cv2.putText(img, str(abs(gt_lab[1][0][1])), (10, 600), font, 3, (255, 255, 255), 2, cv2.LINE_AA)
 
             # Show iamge
             cv2.imshow('image', img)
-            cv2.waitKey(1)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
 
             # Increase counter
             img_counter += 1
             print(str(img_counter))
+
+            # Record video
+            if record_video:
+                if img_counter == 1:
+                    out_video = cv2.VideoWriter(images_path_opencv + 'output.mp4', fourcc, FRAME_RATE, (img.shape[1], img.shape[0]))
+
+                # Record frame
+                out_video.write(img)
+
 
         if not isinstance(outs, list):
             outs = [outs]
@@ -335,6 +350,11 @@ def compute_predictions_and_gt(model, generator, steps,
         steps_done += 1
         if verbose == 1:
             progbar.update(steps_done)
+
+    # Release resources
+    if record_video:
+        cap.release()
+        out_video.release()
 
     if steps_done == 1:
         return [out for out in all_outs], [lab for lab in all_labels], np.concatenate(all_ts[0])

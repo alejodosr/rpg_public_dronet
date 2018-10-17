@@ -210,7 +210,7 @@ def _main():
     nb_batches = int(np.ceil(n_samples / FLAGS.batch_size))
 
     predictions, ground_truth, t = utils.compute_predictions_and_gt(
-            model, test_generator, nb_batches, verbose = 1, images_path_opencv=images_path_opencv)
+            model, test_generator, nb_batches, verbose = 1, images_path_opencv=images_path_opencv, images_show=FLAGS.images_show, record_video=FLAGS.record_video)
 
     # Param t. t=1 steering, t=0 collision
     t_mask = t==1
