@@ -167,6 +167,16 @@ def evaluate_classification(pred_prob, pred_labels, real_labels, fname):
 
 def _main():
 
+    # Read all the images path
+    # images_path_opencv = []
+    # for subdir, dirs, files in os.walk(FLAGS.test_dir):
+    #     for file in files:
+    #         if file.endswith(".jpg"):
+    #             images_path_opencv.append(subdir + "/" + file)
+
+
+    images_path_opencv = FLAGS.test_dir + "/"
+
     # Set testing mode (dropout/batchnormalization)
     K.set_learning_phase(TEST_PHASE)
 
@@ -189,7 +199,7 @@ def _main():
         model.load_weights(weights_load_path)
         print("Loaded model from {}".format(weights_load_path))
     except:
-        print("Impossible to find weight path. Returning untrained model")
+        print("Impossible to find weight path. Returning untrained model " + weights_load_path)
 
 
     # Compile model
@@ -200,7 +210,7 @@ def _main():
     nb_batches = int(np.ceil(n_samples / FLAGS.batch_size))
 
     predictions, ground_truth, t = utils.compute_predictions_and_gt(
-            model, test_generator, nb_batches, verbose = 1)
+            model, test_generator, nb_batches, verbose = 1, images_path_opencv=images_path_opencv)
 
     # Param t. t=1 steering, t=0 collision
     t_mask = t==1

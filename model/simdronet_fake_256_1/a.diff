@@ -1,0 +1,24 @@
+diff --git a/cnn.py b/cnn.py
+index 58baeee..67a2c0c 100644
+--- a/cnn.py
++++ b/cnn.py
+@@ -121,6 +121,7 @@ def _main():
+                                              width_shift_range = 0.2,
+                                              height_shift_range=0.2)
+ 
++
+     train_generator = train_datagen.flow_from_directory(FLAGS.train_dir,
+                                                         shuffle = True,
+                                                         color_mode=FLAGS.img_mode,
+diff --git a/utils.py b/utils.py
+index e8d036a..81fab53 100644
+--- a/utils.py
++++ b/utils.py
+@@ -153,6 +153,7 @@ class DroneDirectoryIterator(Iterator):
+                         break
+                 if is_valid:
+                     absolute_path = os.path.join(root, fname)
++                    #print(absolute_path)
+                     self.filenames.append(os.path.relpath(absolute_path,
+                             self.directory))
+                     self.ground_truth.append(ground_truth[frame_number])

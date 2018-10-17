@@ -11,7 +11,7 @@ from keras.utils.generic_utils import Progbar
 from keras.models import model_from_json
 
 import img_utils
-
+import cv2
 
 class DroneDataGenerator(ImageDataGenerator):
     """
@@ -216,7 +216,7 @@ class DroneDirectoryIterator(Iterator):
 
 def compute_predictions_and_gt(model, generator, steps,
                                      max_q_size=10,
-                                     pickle_safe=False, verbose=0):
+                                     pickle_safe=False, verbose=0, images_path_opencv=""):
     """
     Generate predictions and associated ground truth
     for the input samples from a data generator.
@@ -249,12 +249,18 @@ def compute_predictions_and_gt(model, generator, steps,
     all_outs = []
     all_labels = []
     all_ts = []
+    img_counter = 0
 
     if verbose == 1:
         progbar = Progbar(target=steps)
 
+    images_file_names = getattr(generator, "filenames")
+    print("Number of images: " + str(len(images_file_names)))
+
     while steps_done < steps:
         generator_output = next(generator)
+        #print(getattr(generator, "batch_index"))
+
 
         if isinstance(generator_output, tuple):
             if len(generator_output) == 2:
@@ -270,6 +276,36 @@ def compute_predictions_and_gt(model, generator, steps,
             raise ValueError('Output not valid for current evaluation')
 
         outs = model.predict_on_batch(x)
+
+        ENABLE_SHOW = True
+
+
+        if (ENABLE_SHOW):
+            # Read image
+            img = cv2.imread(images_path_opencv + images_file_names[int(getattr(generator, "batch_index") - 1)])
+
+            # Probability of collision
+            p_coll = abs(float(outs[1][0]))
+
+            # Include prediction
+            color = (100, int(255 * (1 - p_coll)), int(255 * p_coll))
+            OFFSET_X = 100
+            OFFSET_Y = 630
+            RO_SIZE = 400
+            cv2.line(img, (OFFSET_X, OFFSET_Y), (OFFSET_X, int(OFFSET_Y - RO_SIZE * p_coll)), color, 35, cv2.LINE_4)
+
+            # font = cv2.FONT_HERSHEY_SIMPLEX
+            # cv2.putText(img, str(abs(round(float(outs[1][0]), 3))), (10, 500), font, 3, (255, 255, 255), 2, cv2.LINE_AA)
+            # cv2.putText(img, str(abs(gt_lab[1][0][1])), (10, 600), font, 3, (255, 255, 255), 2, cv2.LINE_AA)
+
+            # Show iamge
+            cv2.imshow('image', img)
+            cv2.waitKey(1)
+
+            # Increase counter
+            img_counter += 1
+            print(str(img_counter))
+
         if not isinstance(outs, list):
             outs = [outs]
         if not isinstance(gt_lab, list):
