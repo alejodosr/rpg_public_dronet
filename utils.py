@@ -12,6 +12,7 @@ from keras.models import model_from_json
 
 import img_utils
 import cv2
+import math
 
 class DroneDataGenerator(ImageDataGenerator):
     """
@@ -289,6 +290,9 @@ def compute_predictions_and_gt(model, generator, steps,
             # Read image
             img = cv2.imread(images_path_opencv + images_file_names[int(getattr(generator, "batch_index") - 1)])
 
+            # Resize image
+            img = cv2.resize(img, (960,720))
+
             # Probability of collision
             p_coll = abs(float(outs[1][0]))
 
@@ -302,6 +306,43 @@ def compute_predictions_and_gt(model, generator, steps,
             font = cv2.FONT_HERSHEY_SIMPLEX
             cv2.putText(img, str(abs(round(float(outs[1][0]), 3))), (OFFSET_X + 45, OFFSET_Y), font, 2, color, 2, cv2.LINE_AA)
             # cv2.putText(img, str(abs(gt_lab[1][0][1])), (10, 600), font, 3, (255, 255, 255), 2, cv2.LINE_AA)
+
+            # Plot angle
+            current_angle = round(float(outs[0][0][0]), 3)
+            current_angle *= (-1)
+
+            RO_SIZE = 100
+            OFFSET_X = 600
+            OFFSET_Y = 630
+            COLOR = (100, 100, 222)
+
+            # From polars to cartesians
+            x_image = int(RO_SIZE * math.sin(current_angle) + RO_SIZE + OFFSET_X)
+            y_image = int(- (RO_SIZE * math.cos(current_angle)) + OFFSET_Y)
+
+            x_origin = OFFSET_X + RO_SIZE
+            y_origin = OFFSET_Y
+
+            # Plot extremes
+            # Line
+            x_extreme_left = int(RO_SIZE * math.sin(math.pi / 2) + RO_SIZE + OFFSET_X)
+            y_extreme = int(- (RO_SIZE * math.cos(math.pi / 2)) + OFFSET_Y)
+            x_extreme_right = int(RO_SIZE * math.sin(-math.pi / 2) + RO_SIZE + OFFSET_X)
+            cv2.line(img, (x_extreme_left, y_extreme), (x_extreme_right, y_extreme), color, 2)
+
+            # Text
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            cv2.putText(img, str(round(math.pi / 2, 2)), (x_extreme_left + 5, y_extreme), font, 0.5, color, 1, cv2.LINE_AA)
+            cv2.putText(img, str(-round(math.pi / 2, 2)), (x_extreme_right - 53, y_extreme), font, 0.5, color, 1, cv2.LINE_AA)
+
+
+            # Plot text
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            cv2.putText(img, str(current_angle), (x_image - 20, y_image - 15), font, 0.5, color, 1, cv2.LINE_AA)
+
+            # Draw line in image
+            cv2.line(img, (x_origin, y_origin), (x_image, y_image), color, 2)
+
 
             # Show iamge
             cv2.imshow('image', img)
