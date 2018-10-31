@@ -32,6 +32,10 @@ class MyCallback(keras.callbacks.Callback):
         print(self.model.alpha.eval(sess))
         print(self.model.beta.eval(sess))
 
+        # Epoch printing
+        print("Epoch considered on epoch begin is: " + str(epoch))
+        print("Iterations considered on epoch begin is: " + str(self.iterations))
+
 
     def on_epoch_end(self, epoch, logs={}):
         
@@ -52,4 +56,8 @@ class MyCallback(keras.callbacks.Callback):
         entropy_function = self.batch_size-(self.batch_size-5)*(np.maximum(0.0,1.0-np.exp(-1.0/30.0*(epoch-30.0))))
         self.model.k_mse.load(int(np.round(mse_function)), sess)
         self.model.k_entropy.load(int(np.round(entropy_function)), sess)
+
+        # Epoch printing
+        print("Epoch considered on epoch end is: " + str(epoch))
+        print("Iterations considered on epoch end is: " + str(self.iterations))
 

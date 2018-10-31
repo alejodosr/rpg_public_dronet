@@ -60,8 +60,13 @@ def trainModel(train_data_generator, val_data_generator, model, initial_epoch):
     model.k_mse = tf.Variable(FLAGS.batch_size, trainable=False, name='k_mse', dtype=tf.int32)
     model.k_entropy = tf.Variable(FLAGS.batch_size, trainable=False, name='k_entropy', dtype=tf.int32)
 
-
-    optimizer = optimizers.Adam(decay=1e-5)
+    # Included to be able to perform step-by-step training (stopping between log_rate epochs)
+    steps_per_epoch = int(np.ceil(train_data_generator.samples / FLAGS.batch_size))
+    learning_rate = 0.001
+    decay = 1e-5
+    learning_rate *= (1. / (1. + decay * (float(steps_per_epoch) * float(FLAGS.initial_epoch))))
+    print("Iterations considered at the beginning of training (for decay optimizer computation): " + str(steps_per_epoch))
+    optimizer = optimizers.Adam(lr=learning_rate, decay=1e-5)
 
     # Configure training process
     model.compile(loss=[utils.hard_mining_mse(model.k_mse),
