@@ -34,8 +34,6 @@ class MyCallback(keras.callbacks.Callback):
 
         # Epoch printing
         print("Epoch considered on epoch begin is: " + str(epoch))
-        print("Iterations considered on epoch begin is: " + str(K.iterations))
-
 
     def on_epoch_end(self, epoch, logs={}):
         
@@ -59,5 +57,3 @@ class MyCallback(keras.callbacks.Callback):
 
         # Epoch printing
         print("Epoch considered on epoch end is: " + str(epoch))
-        print("Iterations considered on epoch end is: " + str(K.iterations))
-

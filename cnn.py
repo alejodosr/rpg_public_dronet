@@ -66,6 +66,7 @@ def trainModel(train_data_generator, val_data_generator, model, initial_epoch):
     decay = 1e-5
     learning_rate *= (1. / (1. + decay * (float(steps_per_epoch) * float(FLAGS.initial_epoch))))
     print("Iterations considered at the beginning of training (for decay optimizer computation): " + str(steps_per_epoch * FLAGS.initial_epoch))
+    print("Learning rate considered at the beginning of training: " + str(learning_rate))
     optimizer = optimizers.Adam(lr=learning_rate, decay=1e-5)
 
     # Configure training process
